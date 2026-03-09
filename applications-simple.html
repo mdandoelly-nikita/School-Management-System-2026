@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications - Admin</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .logout {
+            float: right;
+            background: #ef4444;
+        }
+        .logout:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <i class="fas fa-file-signature"></i> Admission Applications
+            <button class="logout" onclick="logout()">Logout</button>
+        </h1>
+        
+        <div id="appsTable">
+            <p>Loading...</p>
+        </div>
+    </div>
+    
+    <script src="../../js/firebase-config.js"></script>
+    <script>
+        auth.onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            
+            loadApplications();
+        });
+        
+        async function loadApplications() {
+            const snapshot = await db.collection('applications')
+                .orderBy('submittedAt', 'desc')
+                .get();
+            
+            if (snapshot.empty) {
+                document.getElementById('appsTable').innerHTML = '<p>No applications yet</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>Name</th><th>Class</th><th>Parent</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>';
+            
+            snapshot.forEach(doc => {
+                const app = doc.data();
+                const date = app.submittedAt?.seconds ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : '';
+                
+                html += `
+                    <tr>
+                        <td>${app.firstName} ${app.lastName}</td>
+                        <td>${app.applyingClass}</td>
+                        <td>${app.parentName}</td>
+                        <td>${app.parentPhone}</td>
+                        <td>${app.parentEmail}</td>
+                        <td><span class="status-${app.status || 'pending'}">${app.status || 'pending'}</span></td>
+                        <td>
+                            ${app.status === 'pending' ? `
+                                <button onclick="approve('${doc.id}')">Approve</button>
+                                <button onclick="reject('${doc.id}')">Reject</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</table>';
+            document.getElementById('appsTable').innerHTML = html;
+        }
+        
+        async function approve(id) {
+            await db.collection('applications').doc(id).update({ status: 'approved' });
+            loadApplications();
+        }
+        
+        async function reject(id) {
+            await db.collection('applications').doc(id).update({ status: 'rejected' });
+            loadApplications();
+        }
+        
+        function logout() {
+            auth.signOut().then(() => window.location.href = '../../login.html');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Marks - Teacher Portal</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Copy all styles from previous enter-marks.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f3f4f6;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-header i {
+            font-size: 50px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .sidebar-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .sidebar-nav {
+            padding: 20px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .page-title h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info span {
+            color: #666;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fee2e2;
+        }
+        
+        .teacher-info {
+            background: #f0f4ff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .teacher-info i {
+            font-size: 20px;
+        }
+        
+        .assigned-classes {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .assigned-classes h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .class-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .class-btn {
+            background: #f0f4ff;
+            border: 2px solid #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .class-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .class-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .stream-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .stream-selector h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .stream-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .stream-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .stream-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .stream-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .marks-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        input {
+            width: 80px;
+            padding: 5px;
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h2 id="teacherName">Teacher</h2>
+                <p id="teacherSchool"></p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="enter-marks.html" class="nav-item active">Enter Marks</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Enter Marks</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="teacher-info">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span id="teacherDisplay"></span>
+            </div>
+            
+            <!-- Step 1: Select Class -->
+            <div class="assigned-classes">
+                <h3>Step 1: Select Class</h3>
+                <div id="classButtons" class="class-buttons">
+                    <div class="loading">Loading your assigned classes...</div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Select Stream (shown after class selected) -->
+            <div id="streamSelector" class="stream-selector" style="display: none;">
+                <h3>Step 2: Select Stream</h3>
+                <div id="streamButtons" class="stream-buttons"></div>
+            </div>
+            
+            <!-- Step 3: Subject & Term (shown after stream selected) -->
+            <div id="subjectSelector" class="controls" style="display: none;">
+                <div class="control-group">
+                    <label>Subject</label>
+                    <select id="subjectSelect">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Term</label>
+                    <select id="termSelect">
+                        <option value="Term 1">Term 1</option>
+                        <option value="Term 2">Term 2</option>
+                        <option value="Term 3">Term 3</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="loadMarks()">Load Students</button>
+            </div>
+            
+            <!-- Marks Table -->
+            <div id="marksTable" class="marks-table" style="display: none;">
+                <h3 id="selectedInfo"></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Admission</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marksBody">
+                        <tr><td colspan="5">Select class and stream to continue</td></tr>
+                    </tbody>
+                </table>
+                <div class="action-bar">
+                    <button class="btn-secondary" onclick="resetMarks()">Reset</button>
+                    <button class="btn-primary" onclick="saveMarks()">Save Marks</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../../js/firebase-config.js"></script>
+    <script>
+        let currentUser = null;
+        let teacherData = null;
+        let currentSchoolId = null;
+        let currentClass = null;
+        let currentStream = null;
+        let currentStudents = [];
+        
+        auth.onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            teacherData = userDoc.data();
+            currentSchoolId = teacherData.schoolId;
+            
+            document.getElementById('teacherName').textContent = teacherData.name || 'Teacher';
+            document.getElementById('teacherDisplay').textContent = `${teacherData.name || 'Teacher'} - Your Assigned Classes`;
+            
+            // Display assigned classes
+            displayAssignedClasses();
+        });
+        
+        function displayAssignedClasses() {
+            const container = document.getElementById('classButtons');
+            const assignments = teacherData.assignments || {};
+            
+            if (Object.keys(assignments).length === 0) {
+                container.innerHTML = '<p>No classes assigned yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            for (const className in assignments) {
+                html += `<button class="class-btn" onclick="selectClass('${className}')">${className}</button>`;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function selectClass(className) {
+            currentClass = className;
+            
+            // Highlight selected class
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === className) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Show stream selector
+            document.getElementById('streamSelector').style.display = 'block';
+            document.getElementById('subjectSelector').style.display = 'none';
+            document.getElementById('marksTable').style.display = 'none';
+            
+            // Display streams for this class
+            displayStreams(className);
+        }
+        
+        function displayStreams(className) {
+            const container = document.getElementById('streamButtons');
+            const assignments = teacherData.assignments || {};
+            const streams = assignments[className] || [];
+            
+            if (streams.length === 0) {
+                container.innerHTML = '<p>No streams assigned for this class.</p>';
+                return;
+            }
+            
+            let html = '';
+            streams.forEach(stream => {
+                html += `<button class="stream-btn" onclick="selectStream('${stream}')">${stream}</button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function selectStream(stream) {
+            currentStream = stream;
+            
+            // Highlight selected stream
+            document.querySelectorAll('.stream-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === stream) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Show subject selector
+            document.getElementById('subjectSelector').style.display = 'flex';
+            document.getElementById('marksTable').style.display = 'none';
+            
+            // Load subjects
+            loadSubjects();
+        }
+        
+        function loadSubjects() {
+            const select = document.getElementById('subjectSelect');
+            const subjects = teacherData.subjects || [];
+            
+            select.innerHTML = '<option value="">Select Subject</option>';
+            subjects.forEach(s => {
+                select.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+        }
+        
+        async function loadMarks() {
+            const subject = document.getElementById('subjectSelect').value;
+            const term = document.getElementById('termSelect').value;
+            
+            if (!subject) {
+                alert('Please select a subject');
+                return;
+            }
+            
+            document.getElementById('selectedInfo').textContent = `${currentClass} - ${currentStream} - ${subject} - ${term}`;
+            
+            // Load students in this stream
+            await loadStudents();
+            
+            // Load existing marks
+            await loadExistingMarks(subject, term);
+            
+            document.getElementById('marksTable').style.display = 'block';
+        }
+        
+        async function loadStudents() {
+            const snapshot = await db.collection('students')
+                .where('schoolId', '==', currentSchoolId)
+                .where('studentClass', '==', currentStream)
+                .where('status', '==', 'active')
+                .get();
+            
+            currentStudents = [];
+            snapshot.forEach(doc => {
+                currentStudents.push({ id: doc.id, ...doc.data() });
+            });
+            
+            if (currentStudents.length === 0) {
+                document.getElementById('marksBody').innerHTML = '<tr><td colspan="5">No students in this stream</td></tr>';
+                return;
+            }
+            
+            displayStudentTable({});
+        }
+        
+        async function loadExistingMarks(subject, term) {
+            const snapshot = await db.collection('marks')
+                .where('schoolId', '==', currentSchoolId)
+                .where('class', '==', currentClass)
+                .where('stream', '==', currentStream)
+                .where('subject', '==', subject)
+                .where('term', '==', term)
+                .get();
+            
+            const marks = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                marks[data.studentId] = data.score;
+            });
+            
+            displayStudentTable(marks);
+        }
+        
+        function calculateGrade(score) {
+            if (score >= 80) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 60) return 'C';
+            if (score >= 50) return 'D';
+            return 'E';
+        }
+        
+        function displayStudentTable(existingMarks) {
+            let html = '';
+            currentStudents.forEach((student, index) => {
+                const score = existingMarks[student.id] || '';
+                const grade = score ? calculateGrade(parseInt(score)) : '-';
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.firstName} ${student.lastName}</td>
+                        <td>${student.admissionNumber || 'N/A'}</td>
+                        <td>
+                            <input type="number" 
+                                   class="score-input" 
+                                   data-student-id="${student.id}"
+                                   value="${score}"
+                                   min="0" max="100"
+                                   onchange="updateGrade(this)">
+                        </td>
+                        <td class="grade-cell" id="grade-${student.id}">${grade}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('marksBody').innerHTML = html;
+        }
+        
+        function updateGrade(input) {
+            const studentId = input.dataset.studentId;
+            const score = input.value;
+            const grade = score ? calculateGrade(parseInt(score)) : '-';
+            document.getElementById(`grade-${studentId}`).textContent = grade;
+        }
+        
+        async function saveMarks() {
+            const subject = document.getElementById('subjectSelect').value;
+            const term = document.getElementById('termSelect').value;
+            
+            const inputs = document.querySelectorAll('.score-input');
+            let saved = 0;
+            
+            for (const input of inputs) {
+                const studentId = input.dataset.studentId;
+                const score = input.value;
+                
+                if (!score) continue;
+                
+                const student = currentStudents.find(s => s.id === studentId);
+                const grade = calculateGrade(parseInt(score));
+                
+                // Check if mark exists
+                const existing = await db.collection('marks')
+                    .where('schoolId', '==', currentSchoolId)
+                    .where('class', '==', currentClass)
+                    .where('stream', '==', currentStream)
+                    .where('subject', '==', subject)
+                    .where('term', '==', term)
+                    .where('studentId', '==', studentId)
+                    .get();
+                
+                const markData = {
+                    schoolId: currentSchoolId,
+                    class: currentClass,
+                    stream: currentStream,
+                    subject: subject,
+                    term: term,
+                    studentId: studentId,
+                    studentName: `${student.firstName} ${student.lastName}`,
+                    score: parseInt(score),
+                    grade: grade,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                if (existing.empty) {
+                    markData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('marks').add(markData);
+                } else {
+                    await existing.docs[0].ref.update(markData);
+                }
+                
+                saved++;
+            }
+            
+            alert(`Saved ${saved} marks!`);
+        }
+        
+        function resetMarks() {
+            if (confirm('Reset all marks?')) {
+                document.querySelectorAll('.score-input').forEach(input => {
+                    input.value = '';
+                });
+                document.querySelectorAll('.grade-cell').forEach(cell => {
+                    cell.textContent = '-';
+                });
+            }
+        }
+        
+        function logout() {
+            auth.signOut().then(() => window.location.href = '../../login.html');
+        }
+    </script>
+</body>
+</html>

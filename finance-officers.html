@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Officers - School System</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f3f4f6;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-header i {
+            font-size: 50px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .sidebar-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .sidebar-nav {
+            padding: 20px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .page-title h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info span {
+            color: #666;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fee2e2;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .stat-info h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-info .number {
+            color: #333;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: #f0f4ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 2px solid #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .finance-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .finance-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .finance-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .finance-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .finance-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .finance-info p {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .login-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .finance-details {
+            margin: 15px 0;
+            padding: 15px 0;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .detail-row .label {
+            color: #666;
+        }
+        
+        .detail-row .value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .finance-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: 1px solid #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #666;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .btn-icon:hover {
+            background: #f3f4f6;
+        }
+        
+        .btn-icon.key:hover {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .btn-icon.delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fee2e2;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-details {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #667eea;
+        }
+        
+        .login-details p {
+            margin: 8px 0;
+            color: #333;
+        }
+        
+        .login-details strong {
+            color: #667eea;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1100;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-school"></i>
+                <h2 id="schoolName">Loading...</h2>
+                <p id="schoolType"></p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="teachers.html" class="nav-item">
+                    <i class="fas fa-users"></i> Teachers
+                </a>
+                <a href="students.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> Students
+                </a>
+                <a href="parents.html" class="nav-item">
+                    <i class="fas fa-family"></i> Parents
+                </a>
+                <a href="classes.html" class="nav-item">
+                    <i class="fas fa-book"></i> Classes
+                </a>
+                <a href="finance-officers.html" class="nav-item active">
+                    <i class="fas fa-coins"></i> Finance Officers
+                </a>
+                <a href="fee-structure.html" class="nav-item">
+                    <i class="fas fa-coins"></i> Fee Structure
+                </a>
+                <a href="fee-payments.html" class="nav-item">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="fee-reports.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> Reports
+                </a>
+                <a href="notifications.html" class="nav-item">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="finance-officers.html" class="nav-item">
+                    <i class="fas fa-coins"></i> Finance Officers
+                </a>
+              <a href="approve-applications.html" class="nav-item">
+    <i class="fas fa-file-signature"></i> Applications
+</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-coins" style="margin-right: 10px; color: #667eea;"></i>Finance Officers</h1>
+                </div>
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Finance Officers</h3>
+                        <div class="number" id="totalOfficers">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-bar">
+                <h2>Finance Staff</h2>
+                <button class="btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Add Finance Officer
+                </button>
+            </div>
+            
+            <div id="officersContainer" class="finance-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading finance officers...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Finance Officer Modal -->
+    <div id="officerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Finance Officer</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="officerForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="officerName" required placeholder="e.g., John Finance">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email (Optional)</label>
+                    <input type="email" id="officerEmail" placeholder="finance@school.com">
+                    <small style="color: #666;">Leave blank for auto-generated email</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="officerPhone" required placeholder="e.g., 0712345678">
+                </div>
+                
+                <div id="loginPreview" class="login-details" style="display: none;">
+                    <p><i class="fas fa-check-circle" style="color: #10b981;"></i> <strong>Finance Officer Login Created!</strong></p>
+                    <p><strong>Email:</strong> <span id="loginEmail"></span></p>
+                    <p><strong>Password:</strong> <span id="loginPassword"></span></p>
+                    <p style="color: #ef4444; font-size: 12px; margin-top: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> Please save these credentials!
+                    </p>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Officer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Login Info Modal -->
+    <div id="loginInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-key"></i> Login Details</h2>
+                <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+            </div>
+            
+            <div id="loginDetailsContent" class="login-details">
+                Loading...
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="copyLoginDetails()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+                <button class="btn-secondary" onclick="closeLoginModal()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="messageToast" class="message"></div>
+    
+    <script src="../../js/firebase-config.js"></script>
+    <script>
+        let currentUser = null;
+        let currentSchoolId = null;
+        let officers = [];
+        
+        function showMessage(text, type) {
+            const toast = document.getElementById('messageToast');
+            toast.textContent = text;
+            toast.className = `message ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function generatePassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+            let password = '';
+            for (let i = 0; i < 10; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+        
+        auth.onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            
+            currentUser = user;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const userData = userDoc.data();
+                currentSchoolId = userData.schoolId;
+                
+                const schoolDoc = await db.collection('schools').doc(userData.schoolId).get();
+                document.getElementById('schoolName').textContent = schoolDoc.data().name;
+                document.getElementById('schoolType').textContent = 
+                    schoolDoc.data().type === 'primary' ? 'Primary' : 'High School';
+                
+                await loadOfficers();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error loading data', 'error');
+            }
+        });
+        
+        async function loadOfficers() {
+            const snapshot = await db.collection('users')
+                .where('schoolId', '==', currentSchoolId)
+                .where('role', '==', 'finance')
+                .get();
+            
+            officers = [];
+            snapshot.forEach(doc => {
+                officers.push({ id: doc.id, ...doc.data() });
+            });
+            
+            document.getElementById('totalOfficers').textContent = officers.length;
+            displayOfficers();
+        }
+        
+        function displayOfficers() {
+            const container = document.getElementById('officersContainer');
+            
+            if (officers.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px; background: white; border-radius: 12px; grid-column: 1/-1;">
+                        <i class="fas fa-coins" style="font-size: 60px; color: #cbd5e0;"></i>
+                        <h3 style="margin: 20px 0;">No Finance Officers Added</h3>
+                        <p>Click "Add Finance Officer" to add staff.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            officers.forEach(o => {
+                const initials = o.name ? o.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : 'FN';
+                
+                html += `
+                    <div class="finance-card">
+                        <div class="finance-header">
+                            <div class="finance-avatar">${initials}</div>
+                            <div class="finance-info">
+                                <h3>${o.name}</h3>
+                                <p><i class="fas fa-envelope"></i> ${o.email}</p>
+                                <p><i class="fas fa-phone"></i> ${o.phone}</p>
+                                <span class="login-badge"><i class="fas fa-check-circle"></i> Login Active</span>
+                            </div>
+                        </div>
+                        
+                        <div class="finance-details">
+                            <div class="detail-row">
+                                <span class="label">Added:</span>
+                                <span class="value">${o.createdAt ? new Date(o.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="finance-actions">
+                            <button class="btn-icon key" onclick="showLoginDetails('${o.uid}')">
+                                <i class="fas fa-key"></i> View Login
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteOfficer('${o.uid}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        document.getElementById('officerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('officerName').value;
+            const email = document.getElementById('officerEmail').value;
+            const phone = document.getElementById('officerPhone').value;
+            
+            // Generate email if not provided
+            const finalEmail = email || `finance${Math.floor(Math.random() * 1000)}@${currentSchoolId.toLowerCase()}.school.com`;
+            const password = generatePassword();
+            
+            try {
+                // Create auth user
+                const userCredential = await auth.createUserWithEmailAndPassword(finalEmail, password);
+                
+                // Create user record
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    uid: userCredential.user.uid,
+                    name: name,
+                    email: finalEmail,
+                    phone: phone,
+                    role: 'finance',
+                    schoolId: currentSchoolId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Show login details
+                document.getElementById('loginEmail').textContent = finalEmail;
+                document.getElementById('loginPassword').textContent = password;
+                document.getElementById('loginPreview').style.display = 'block';
+                
+                showMessage('Finance officer added successfully!', 'success');
+                
+                document.getElementById('officerName').value = '';
+                document.getElementById('officerEmail').value = '';
+                document.getElementById('officerPhone').value = '';
+                
+                await loadOfficers();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error: ' + error.message, 'error');
+            }
+        });
+        
+        function showLoginDetails(uid) {
+            const officer = officers.find(o => o.uid === uid);
+            if (!officer) return;
+            
+            const content = `
+                <p><i class="fas fa-user"></i> <strong>Name:</strong> ${officer.name}</p>
+                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> ${officer.email}</p>
+                <p><i class="fas fa-key"></i> <strong>Password:</strong> <span style="color: #10b981;">[Stored securely]</span></p>
+                <p><i class="fas fa-exclamation-triangle"></i> Password cannot be retrieved. Reset if forgotten.</p>
+            `;
+            
+            document.getElementById('loginDetailsContent').innerHTML = content;
+            document.getElementById('loginInfoModal').classList.add('active');
+        }
+        
+        function copyLoginDetails() {
+            const content = document.getElementById('loginDetailsContent').innerText;
+            navigator.clipboard.writeText(content);
+            showMessage('Login details copied!', 'success');
+        }
+        
+        function closeLoginModal() {
+            document.getElementById('loginInfoModal').classList.remove('active');
+        }
+        
+        async function deleteOfficer(uid) {
+            if (!confirm('Remove this finance officer?')) return;
+            
+            try {
+                await db.collection('users').doc(uid).delete();
+                // Note: Auth user deletion requires Admin SDK
+                showMessage('Finance officer removed', 'success');
+                await loadOfficers();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error removing officer', 'error');
+            }
+        }
+        
+        function openAddModal() {
+            document.getElementById('officerForm').reset();
+            document.getElementById('loginPreview').style.display = 'none';
+            document.getElementById('officerModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('officerModal').classList.remove('active');
+        }
+        
+        function logout() {
+            auth.signOut().then(() => window.location.href = '../../login.html');
+        }
+    </script>
+</body>
+</html>

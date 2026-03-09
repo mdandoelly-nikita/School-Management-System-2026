@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Teachers - School System</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f3f4f6;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-header i {
+            font-size: 50px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .sidebar-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .sidebar-nav {
+            padding: 20px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .page-title h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info span {
+            color: #666;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fee2e2;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .stat-info h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-info .number {
+            color: #333;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: #f0f4ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 20px;
+        }
+        
+        .class-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 2px solid #e0e0e0;
+        }
+        
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        
+        .class-header h3 {
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .class-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-class {
+            background: #667eea;
+            color: white;
+        }
+        
+        .badge-stream {
+            background: #10b981;
+            color: white;
+        }
+        
+        .assigned-teacher {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e0e7ff;
+        }
+        
+        .teacher-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .teacher-info i {
+            width: 20px;
+            color: #667eea;
+        }
+        
+        .teacher-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .btn-save {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-save:hover {
+            background: #5a67d8;
+        }
+        
+        .no-teacher {
+            color: #999;
+            font-style: italic;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1100;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-school"></i>
+                <h2 id="schoolName">Loading...</h2>
+                <p id="schoolType"></p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="teachers.html" class="nav-item">
+                    <i class="fas fa-users"></i> Teachers
+                </a>
+                <a href="students.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> Students
+                </a>
+                <a href="parents.html" class="nav-item">
+                    <i class="fas fa-family"></i> Parents
+                </a>
+                <a href="classes.html" class="nav-item">
+                    <i class="fas fa-book"></i> Classes
+                </a>
+                <a href="class-teachers.html" class="nav-item active">
+                    <i class="fas fa-chalkboard-teacher"></i> Class Teachers
+                </a>
+                <a href="fee-structure.html" class="nav-item">
+                    <i class="fas fa-coins"></i> Fee Structure
+                </a>
+                <a href="fee-payments.html" class="nav-item">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="fee-reports.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> Reports
+                </a>
+                <a href="notifications.html" class="nav-item">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="applications.html" class="nav-item">
+    <i class="fas fa-file-signature"></i> Applications
+</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-chalkboard-teacher"></i> Class Teachers</h1>
+                </div>
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Classes</h3>
+                        <div class="number" id="totalClasses">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Streams</h3>
+                        <div class="number" id="totalStreams">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Teachers</h3>
+                        <div class="number" id="totalTeachers">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="classesContainer" class="classes-grid">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="messageToast" class="message"></div>
+    
+    <script src="../../js/firebase-config.js"></script>
+    <script>
+        let currentUser = null;
+        let currentSchoolId = null;
+        let teachers = [];
+        let classes = [];
+        let streams = [];
+        
+        auth.onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            
+            currentUser = user;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const userData = userDoc.data();
+                currentSchoolId = userData.schoolId;
+                
+                const schoolDoc = await db.collection('schools').doc(userData.schoolId).get();
+                document.getElementById('schoolName').textContent = schoolDoc.data().name;
+                
+                await loadAllData();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error loading data', 'error');
+            }
+        });
+        
+        async function loadAllData() {
+            await Promise.all([
+                loadTeachers(),
+                loadClasses(),
+                loadStreams()
+            ]);
+            
+            displayItems();
+        }
+        
+        async function loadTeachers() {
+            const snapshot = await db.collection('users')
+                .where('schoolId', '==', currentSchoolId)
+                .where('role', '==', 'teacher')
+                .get();
+            
+            teachers = [];
+            snapshot.forEach(doc => {
+                teachers.push({ id: doc.id, ...doc.data() });
+            });
+            
+            document.getElementById('totalTeachers').textContent = teachers.length;
+        }
+        
+        async function loadClasses() {
+            const snapshot = await db.collection('classes')
+                .where('schoolId', '==', currentSchoolId)
+                .get();
+            
+            classes = [];
+            snapshot.forEach(doc => {
+                classes.push({ 
+                    id: doc.id, 
+                    name: doc.data().name 
+                });
+            });
+            classes.sort((a, b) => a.name.localeCompare(b.name));
+            
+            document.getElementById('totalClasses').textContent = classes.length;
+        }
+        
+        async function loadStreams() {
+            const snapshot = await db.collection('streams')
+                .where('schoolId', '==', currentSchoolId)
+                .get();
+            
+            streams = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                streams.push({ 
+                    id: doc.id, 
+                    className: data.className,
+                    name: data.name,
+                    fullName: data.fullName || `${data.className} - ${data.name}`
+                });
+            });
+            streams.sort((a, b) => a.fullName.localeCompare(b.fullName));
+            
+            document.getElementById('totalStreams').textContent = streams.length;
+        }
+        
+        function displayItems() {
+            const container = document.getElementById('classesContainer');
+            let html = '';
+            
+            // Display classes
+            classes.forEach(cls => {
+                const assignedTeacher = teachers.find(t => t.assignedClass === cls.name);
+                
+                html += `
+                    <div class="class-card">
+                        <div class="class-header">
+                            <h3><i class="fas fa-users"></i> ${cls.name}</h3>
+                            <span class="class-badge badge-class">CLASS</span>
+                        </div>
+                        
+                        ${assignedTeacher ? `
+                            <div class="assigned-teacher">
+                                <div class="teacher-info">
+                                    <p><strong>${assignedTeacher.name}</strong></p>
+                                    <p><i class="fas fa-phone"></i> ${assignedTeacher.phone || 'No phone'}</p>
+                                    <p><i class="fas fa-envelope"></i> ${assignedTeacher.email || 'No email'}</p>
+                                </div>
+                            </div>
+                        ` : '<div class="no-teacher">No teacher assigned</div>'}
+                        
+                        <select class="teacher-select" id="class-${cls.id}">
+                            <option value="">Select Teacher</option>
+                            ${teachers.map(t => `<option value="${t.id}" ${assignedTeacher?.id === t.id ? 'selected' : ''}>${t.name} (${t.phone || 'No phone'})</option>`).join('')}
+                        </select>
+                        
+                        <button class="btn-save" onclick="assignTeacher('class', '${cls.id}', '${cls.name}')">
+                            Assign Teacher
+                        </button>
+                    </div>
+                `;
+            });
+            
+            // Display streams
+            streams.forEach(stream => {
+                const assignedTeacher = teachers.find(t => t.assignedStream === stream.fullName);
+                
+                html += `
+                    <div class="class-card">
+                        <div class="class-header">
+                            <h3><i class="fas fa-layer-group"></i> ${stream.fullName}</h3>
+                            <span class="class-badge badge-stream">STREAM</span>
+                        </div>
+                        
+                        ${assignedTeacher ? `
+                            <div class="assigned-teacher">
+                                <div class="teacher-info">
+                                    <p><strong>${assignedTeacher.name}</strong></p>
+                                    <p><i class="fas fa-phone"></i> ${assignedTeacher.phone || 'No phone'}</p>
+                                    <p><i class="fas fa-envelope"></i> ${assignedTeacher.email || 'No email'}</p>
+                                </div>
+                            </div>
+                        ` : '<div class="no-teacher">No teacher assigned</div>'}
+                        
+                        <select class="teacher-select" id="stream-${stream.id}">
+                            <option value="">Select Teacher</option>
+                            ${teachers.map(t => `<option value="${t.id}" ${assignedTeacher?.id === t.id ? 'selected' : ''}>${t.name} (${t.phone || 'No phone'})</option>`).join('')}
+                        </select>
+                        
+                        <button class="btn-save" onclick="assignTeacher('stream', '${stream.id}', '${stream.fullName}')">
+                            Assign Teacher
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<div style="text-align: center; padding: 50px;">No classes or streams found</div>';
+        }
+        
+        async function assignTeacher(type, id, name) {
+            const select = document.getElementById(`${type}-${id}`);
+            const teacherId = select.value;
+            
+            if (!teacherId) {
+                showMessage('Select a teacher', 'error');
+                return;
+            }
+            
+            try {
+                // Remove previous assignment
+                const previousTeacher = teachers.find(t => 
+                    (type === 'class' && t.assignedClass === name) ||
+                    (type === 'stream' && t.assignedStream === name)
+                );
+                
+                if (previousTeacher && previousTeacher.id !== teacherId) {
+                    const update = type === 'class' 
+                        ? { assignedClass: null } 
+                        : { assignedStream: null };
+                    await db.collection('users').doc(previousTeacher.id).update(update);
+                }
+                
+                // Assign new teacher
+                const assign = type === 'class' 
+                    ? { assignedClass: name, assignedStream: null }
+                    : { assignedStream: name, assignedClass: null };
+                
+                await db.collection('users').doc(teacherId).update(assign);
+                
+                showMessage('Teacher assigned!', 'success');
+                await loadTeachers();
+                displayItems();
+                
+            } catch (error) {
+                showMessage('Error', 'error');
+            }
+        }
+        
+        function showMessage(text, type) {
+            const toast = document.getElementById('messageToast');
+            toast.textContent = text;
+            toast.className = `message ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function logout() {
+            auth.signOut().then(() => window.location.href = '../../login.html');
+        }
+    </script>
+</body>
+</html>

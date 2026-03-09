@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management 2026 - School System</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="landing-container">
+        <nav class="landing-nav">
+            <div class="logo">
+                <i class="fas fa-school"></i>
+                <span>School Management 2026</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="login.html">Login</a>
+                <a href="setup.html">Register School</a>
+                <a href="apply.html">Apply Now</a>
+            </div>
+        </nav>
+
+        <header class="hero">
+            <div class="hero-content">
+                <h1>School Management 2026</h1>
+                <p>Complete School Management System for Primary and High Schools</p>
+                <div class="hero-buttons">
+                    <a href="setup.html" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <a href="login.html" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="apply.html" class="btn btn-primary">
+                        <i class="fas fa-file-signature"></i> Apply for Admission
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+        </header>
+
+        <section class="features">
+            <h2>Why Choose School Management 2026?</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Multi-User System</h3>
+                    <p>Admin, Teachers, Students, and Parents all in one place</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Results Management</h3>
+                    <p>Auto-grading, report cards, and term-based results</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>Fee Management</h3>
+                    <p>Track payments, balances, and M-Pesa ready</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bell"></i>
+                    <h3>Communications</h3>
+                    <p>Email alerts for exams, fees, and announcements</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/firebase-config.js"></script>
+</body>
+</html>
